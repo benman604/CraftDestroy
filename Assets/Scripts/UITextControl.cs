@@ -56,12 +56,16 @@ public class UITextControl : MonoBehaviour
         right.text = $@"[X] Toggle Block Gravity {gravity}
 [C] Change Color ({color})
 [V] Return Home";
+
+        left.transform.position = new Vector3(0, Screen.height);
+        right.transform.position = new Vector3(Screen.width, Screen.height);
+        center.transform.position = new Vector3(Screen.width / 2, Screen.height);
     }
 
     private void OnGUI()
     {
-        GUI.Box(new Rect(0, 0, 100, 50), left.text);
-        GUI.Box(new Rect(Screen.width - 100, 0, 100, 50), right.text);
+        //GUI.Box(new Rect(0, 0, 100, 50), left.text);
+        //GUI.Box(new Rect(Screen.width - 100, 0, 100, 50), right.text);
         //GUI.Box(new Rect(0, Screen.height - 50, 100, 50), "Bottom-left");
         //GUI.Box(new Rect(Screen.width - 100, Screen.height - 50, 100, 50), "Bottom right");
     }
