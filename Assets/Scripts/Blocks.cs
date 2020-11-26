@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using UnityEngine;
 
 public class Blocks : MonoBehaviour
@@ -21,16 +23,40 @@ public class Blocks : MonoBehaviour
     public int currentColorIndex = 0;
     public string[] colorsString = { "Grey", "Black", "Red", "Green", "Cyan" };
     Color[] colorsObject = { Color.white, Color.black, Color.red, Color.green, Color.cyan };
+
+    public GameObject[] allBlocks;
+    public Vector3[] allBlockPositions;
+
     // Start is called before the first frame update
     void Start()
     {
         int blockStart = Mathf.RoundToInt(-size / 2);
-        for(float x=blockStart; x<=size; x+=block.transform.localScale.x)
+        string type = TitleToGame.GenerationType;
+        if (type == "empty")
         {
-            for(float z=blockStart; z<= size; z+= block.transform.localScale.x)
+            for (float x = blockStart; x <= size; x += block.transform.localScale.x)
             {
-                GameObject newBlock = Instantiate(floor, new Vector3(x, 0, z), Quaternion.identity);
-                newBlock.transform.name = "block";
+                for (float z = blockStart; z <= size; z += block.transform.localScale.x)
+                {
+                    GameObject newBlock = Instantiate(floor, new Vector3(x, 0, z), Quaternion.identity);
+                    newBlock.transform.name = "block";
+                }
+            }
+        } else if(type == "cube")
+        {
+            for(float y = 0; y < TitleToGame.cubeY; y++)
+            {
+                for (float x = 0; x < TitleToGame.cubeX; x++)
+                {
+                    for (float z = 0; z < TitleToGame.cubeZ; z++)
+                    {
+                        float x1 = (((x + 2f) * block.transform.localScale.x) + blockStart + 15) * 1.25f;
+                        float y1 = (((y + 2f) * block.transform.localScale.x) + blockStart) * 1.25f;
+                        float z1 = (((z + 2f) * block.transform.localScale.x) + blockStart + 15) * 1.25f;
+                        GameObject newBlock = Instantiate(block, new Vector3(x1, y1, z1), Quaternion.identity);
+                        newBlock.transform.name = "block";
+                    }
+                }
             }
         }
 
@@ -77,6 +103,7 @@ public class Blocks : MonoBehaviour
                 {
                     SetTargetInvisible(i, true);
                 }
+                resetAllBlockPositions();
             }
         }
 
@@ -92,6 +119,11 @@ public class Blocks : MonoBehaviour
             {
                 currentColorIndex = 0;
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            
         }
 
         RaycastHit hit;
@@ -124,12 +156,45 @@ public class Blocks : MonoBehaviour
                     }
                     Renderer newblockRenderer = newblock.GetComponent<Renderer>();
                     newblockRenderer.material.SetColor("_Color", colorsObject[currentColorIndex]);
+
+                    var tmpList = allBlocks.ToList();
+                    tmpList.Add(newblock);
+                    allBlocks = tmpList.ToArray();
+
+                    var tmpList2 = allBlockPositions.ToList();
+                    tmpList2.Add(newblock.gameObject.transform.position);
+                    allBlockPositions = tmpList2.ToArray();
                 }
                 else
                 {
                     Destroy(hit.transform.gameObject);
                 }
             }
+        }
+    }
+
+    int counter = 0;
+    void resetAllBlockPositions()
+    {
+        for(int i = 0; i < allBlocks.Length; i++)
+        {
+            GameObject block = allBlocks[i];
+            if (block != null)
+            {
+                Vector3 pos = allBlockPositions[i];
+                block.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
+                block.transform.rotation = new Quaternion(0, 0, 0, 0);
+                block.transform.position = pos;
+            }
+        }
+        counter++;
+        if(counter < 10)
+        {
+            Invoke("resetAllBlockPositions", 0.1f);
+        }
+        else
+        {
+            counter = 0;
         }
     }
 

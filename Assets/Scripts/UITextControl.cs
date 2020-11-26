@@ -51,7 +51,7 @@ public class UITextControl : MonoBehaviour
 [Left Click] {clickAction}
 [Right Click] Destroy";
 
-        center.text = $"[X] Toggle Build/Gun {mode}";
+        center.text = $"[Z] Toggle Build/Gun {mode}";
 
         right.text = $@"[X] Toggle Block Gravity {gravity}
 [C] Change Color ({color})
