@@ -14,11 +14,15 @@ public class Blocks : MonoBehaviour
     public float range = 50;
     public bool buildMode = true;
     public bool blockGravity = false;
+    public bool hammer = false;
 
     public PlayerMovement player;
     public GameObject gun;
     public GameObject[] body;
     public Renderer head;
+    public GameObject hammerObject;
+    public Camera camClearFlags;
+    public bool camClearFlagsBool = false;
 
     public int currentColorIndex = 0;
     public string[] colorsString = { "Grey", "Black", "Red", "Green", "Cyan" };
@@ -32,35 +36,75 @@ public class Blocks : MonoBehaviour
     {
         int blockStart = Mathf.RoundToInt(-size / 2);
         string type = TitleToGame.GenerationType;
+        Vector3 center = Vector3.zero;
         if (type == "empty")
         {
-            for (float x = blockStart; x <= size; x += block.transform.localScale.x)
-            {
-                for (float z = blockStart; z <= size; z += block.transform.localScale.x)
-                {
-                    GameObject newBlock = Instantiate(floor, new Vector3(x, 0, z), Quaternion.identity);
-                    newBlock.transform.name = "block";
-                }
-            }
-        } else if(type == "cube")
+            createFlatSquare(20, 0, floor, 0.5f);
+        } 
+        else if (type == "cube")
         {
-            for(float y = 0; y < TitleToGame.cubeY; y++)
+            for (float y = 0; y < TitleToGame.cubeY; y++)
             {
                 for (float x = 0; x < TitleToGame.cubeX; x++)
                 {
                     for (float z = 0; z < TitleToGame.cubeZ; z++)
                     {
-                        float x1 = (((x + 2f) * block.transform.localScale.x) + blockStart + 15) * 1.25f;
+                        float x1 = (((x + 2f) * block.transform.localScale.x) + blockStart) * 1.25f;
                         float y1 = (((y + 2f) * block.transform.localScale.x) + blockStart) * 1.25f;
-                        float z1 = (((z + 2f) * block.transform.localScale.x) + blockStart + 15) * 1.25f;
+                        float z1 = (((z + 2f) * block.transform.localScale.x) + blockStart) * 1.25f + 15;
                         GameObject newBlock = Instantiate(block, new Vector3(x1, y1, z1), Quaternion.identity);
                         newBlock.transform.name = "block";
+                        //newBlock.GetComponent<Rigidbody>().useGravity = true;
+                        addBlockToList(newBlock);
                     }
                 }
+            }
+        } else if (type == "sphere")
+        {
+            for (int x = -TitleToGame.radius; x < TitleToGame.radius * TitleToGame.stretchFactorX; x++)
+            {
+                for (int y = -TitleToGame.radius; y < TitleToGame.radius * TitleToGame.stretchFactorY; y++)
+                {
+                    for (int z = -TitleToGame.radius; z < TitleToGame.radius * TitleToGame.stretchFactorZ; z++)
+                    {
+                        Vector3 pos = new Vector3(x / TitleToGame.stretchFactorX, y / TitleToGame.stretchFactorY, z / TitleToGame.stretchFactorZ);
+                        float dist = Vector3.Distance(pos, center);
+                        if (dist < TitleToGame.radius)
+                        {
+                            GameObject newBlock = Instantiate(block, new Vector3(x + 15, y, z + 15) * 0.59f, Quaternion.identity);
+                            newBlock.transform.name = "block";
+                            addBlockToList(newBlock);
+                        }
+                    }
+                }
+            }
+        } else if (type == "triangle")
+        {
+            for (int y = 0; y < TitleToGame.baseWidth; y++)
+            {
+                createFlatSquare(TitleToGame.baseWidth - y, y, block, 0.6f);
             }
         }
 
         SetTargetInvisible(gun, false);
+
+        if (!hammer)
+        {
+            hammerObject.SetActive(false);
+        }
+    }
+
+    void createFlatSquare(int width, float y, GameObject myblock, float space)
+    {
+        for (float x = 0; x < width; x++)
+        {
+            for (float z = 0; z < width; z++)
+            {
+                GameObject newBlock = Instantiate(myblock, new Vector3(x, y, z + 15) * space, Quaternion.identity);
+                newBlock.transform.name = "block";
+                addBlockToList(newBlock);
+            }
+        }
     }
 
     // Update is called once per frame
@@ -123,7 +167,28 @@ public class Blocks : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.V))
         {
-            
+            hammer = !hammer;
+            if (hammer)
+            {
+                hammerObject.SetActive(true);
+            }
+            else
+            {
+                hammerObject.SetActive(false);
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            camClearFlagsBool = !camClearFlagsBool;
+            if (camClearFlagsBool)
+            {
+                camClearFlags.clearFlags = CameraClearFlags.Skybox;
+            }
+            else
+            {
+                camClearFlags.clearFlags = CameraClearFlags.Depth;
+            }
         }
 
         RaycastHit hit;
@@ -156,14 +221,7 @@ public class Blocks : MonoBehaviour
                     }
                     Renderer newblockRenderer = newblock.GetComponent<Renderer>();
                     newblockRenderer.material.SetColor("_Color", colorsObject[currentColorIndex]);
-
-                    var tmpList = allBlocks.ToList();
-                    tmpList.Add(newblock);
-                    allBlocks = tmpList.ToArray();
-
-                    var tmpList2 = allBlockPositions.ToList();
-                    tmpList2.Add(newblock.gameObject.transform.position);
-                    allBlockPositions = tmpList2.ToArray();
+                    addBlockToList(newblock);
                 }
                 else
                 {
@@ -182,7 +240,8 @@ public class Blocks : MonoBehaviour
             if (block != null)
             {
                 Vector3 pos = allBlockPositions[i];
-                block.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
+                block.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                block.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
                 block.transform.rotation = new Quaternion(0, 0, 0, 0);
                 block.transform.position = pos;
             }
@@ -206,5 +265,16 @@ public class Blocks : MonoBehaviour
             Renderer c = (Renderer)b;
             c.enabled = visible;
         }
+    }
+
+    void addBlockToList(GameObject newblock)
+    {
+        var tmpList = allBlocks.ToList();
+        tmpList.Add(newblock);
+        allBlocks = tmpList.ToArray();
+
+        var tmpList2 = allBlockPositions.ToList();
+        tmpList2.Add(newblock.gameObject.transform.position);
+        allBlockPositions = tmpList2.ToArray();
     }
 }
