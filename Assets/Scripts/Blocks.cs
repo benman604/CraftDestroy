@@ -39,7 +39,7 @@ public class Blocks : MonoBehaviour
         Vector3 center = Vector3.zero;
         if (type == "empty")
         {
-            createFlatSquare(20, 0, floor, 0.5f);
+            createFlatSquare(20, 0, floor, 0.5f, false);
         } 
         else if (type == "cube")
         {
@@ -82,7 +82,7 @@ public class Blocks : MonoBehaviour
         {
             for (int y = 0; y < TitleToGame.baseWidth; y++)
             {
-                createFlatSquare(TitleToGame.baseWidth - y, y, block, 0.6f);
+                createFlatSquare(TitleToGame.baseWidth - y, y, block, 0.6f, true);
             }
         }
 
@@ -94,7 +94,7 @@ public class Blocks : MonoBehaviour
         }
     }
 
-    void createFlatSquare(int width, float y, GameObject myblock, float space)
+    void createFlatSquare(int width, float y, GameObject myblock, float space, bool list)
     {
         for (float x = 0; x < width; x++)
         {
@@ -102,7 +102,10 @@ public class Blocks : MonoBehaviour
             {
                 GameObject newBlock = Instantiate(myblock, new Vector3(x, y, z + 15) * space, Quaternion.identity);
                 newBlock.transform.name = "block";
-                addBlockToList(newBlock);
+                if (list)
+                {
+                    addBlockToList(newBlock);
+                }
             }
         }
     }
@@ -183,7 +186,7 @@ public class Blocks : MonoBehaviour
             camClearFlagsBool = !camClearFlagsBool;
             if (camClearFlagsBool)
             {
-                camClearFlags.clearFlags = CameraClearFlags.Skybox;
+                camClearFlags.clearFlags = CameraClearFlags.Color;
             }
             else
             {
