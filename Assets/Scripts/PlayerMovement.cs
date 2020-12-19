@@ -7,14 +7,13 @@ public class PlayerMovement : MonoBehaviour
     public CharacterController cc;
     public Transform playerBody;
     public float speed = 13f;
-    float xRotation = 0;
     public bool walking = false;
 
     public Transform shootPos;
     public GameObject bullet;
     public GameObject head;
     public float shootForce = 50f;
-
+    public List<GameObject> bullets = new List<GameObject>();
     void Start()
     {
 
@@ -35,14 +34,23 @@ public class PlayerMovement : MonoBehaviour
         Vector3 move = transform.right * x + transform.forward * z + new Vector3(0f, y, 0f);
         cc.Move(move * speed * Time.deltaTime);
 
-        float mouseX = Input.GetAxis("Mouse X") * 100 * Time.deltaTime;
-        playerBody.Rotate(Vector3.up * mouseX);
+        float mouseX = Input.GetAxis("Mouse X") * Time.deltaTime;
+        playerBody.Rotate(Vector3.up * mouseX * MouseLook.mouseSensitivity);
     }
 
     public void shoot()
     {
         GameObject newBullet = Instantiate(bullet, shootPos.position, head.transform.rotation);
+        bullets.Add(newBullet);
         Rigidbody bulletrb = newBullet.GetComponent<Rigidbody>();
         bulletrb.AddForce(head.transform.forward * shootForce);
+    }
+
+    public void clearBullets()
+    {
+        foreach(GameObject bullet in bullets)
+        {
+            Destroy(bullet);
+        }
     }
 }

@@ -16,6 +16,8 @@ public class Blocks : MonoBehaviour
     public bool blockGravity = false;
     public bool hammer = false;
 
+    public GameObject putblock;
+
     public PlayerMovement player;
     public GameObject gun;
     public GameObject[] body;
@@ -37,8 +39,16 @@ public class Blocks : MonoBehaviour
         int blockStart = Mathf.RoundToInt(-size / 2);
         string type = TitleToGame.GenerationType;
         Vector3 center = Vector3.zero;
+        bool notempty = true;
+        float spacing = 1.1f;
+        if (!TitleToGame.useRounded)
+        {
+            block = putblock;
+            spacing = 1.3f;
+        }
         if (type == "empty")
         {
+            notempty = false;
             createFlatSquare(20, 0, floor, 0.5f, false);
         } 
         else if (type == "cube")
@@ -52,7 +62,7 @@ public class Blocks : MonoBehaviour
                         float x1 = (((x + 2f) * block.transform.localScale.x) + blockStart) * 1.25f;
                         float y1 = (((y + 2f) * block.transform.localScale.x) + blockStart) * 1.25f;
                         float z1 = (((z + 2f) * block.transform.localScale.x) + blockStart) * 1.25f + 15;
-                        GameObject newBlock = Instantiate(block, new Vector3(x1, y1, z1), Quaternion.identity);
+                        GameObject newBlock = Instantiate(block, new Vector3(x, y, z + 15) * 0.5f * spacing, Quaternion.identity);
                         newBlock.transform.name = "block";
                         //newBlock.GetComponent<Rigidbody>().useGravity = true;
                         addBlockToList(newBlock);
@@ -71,7 +81,7 @@ public class Blocks : MonoBehaviour
                         float dist = Vector3.Distance(pos, center);
                         if (dist < TitleToGame.radius)
                         {
-                            GameObject newBlock = Instantiate(block, new Vector3(x + 15, y, z + 15) * 0.59f, Quaternion.identity);
+                            GameObject newBlock = Instantiate(block, new Vector3(x + 15, y, z + 15) * 0.5f * spacing, Quaternion.identity);
                             newBlock.transform.name = "block";
                             addBlockToList(newBlock);
                         }
@@ -82,15 +92,27 @@ public class Blocks : MonoBehaviour
         {
             for (int y = 0; y < TitleToGame.baseWidth; y++)
             {
-                createFlatSquare(TitleToGame.baseWidth - y, y, block, 0.6f, true);
+                createFlatSquare(TitleToGame.baseWidth - y, y, block, 0.5f * spacing, true);
             }
         }
+
 
         SetTargetInvisible(gun, false);
 
         if (!hammer)
         {
             hammerObject.SetActive(false);
+        }
+        if (notempty)
+        {
+            buildMode = false;
+            SetTargetInvisible(gun, true);
+            head.enabled = false;
+            foreach (GameObject i in body)
+            {
+                SetTargetInvisible(i, false);
+            }
+            preBlock.SetActive(false);
         }
     }
 
@@ -140,6 +162,7 @@ public class Blocks : MonoBehaviour
                 {
                     SetTargetInvisible(i, false);
                 }
+                preBlock.SetActive(false);
             }
             else
             {
@@ -151,6 +174,7 @@ public class Blocks : MonoBehaviour
                     SetTargetInvisible(i, true);
                 }
                 resetAllBlockPositions();
+                preBlock.SetActive(true);
             }
         }
 
@@ -215,7 +239,7 @@ public class Blocks : MonoBehaviour
                 if (create)
                 {
                     Vector3 newPos = hit.transform.position + (hit.normal / 2);
-                    GameObject newblock = Instantiate(block, newPos, Quaternion.identity);
+                    GameObject newblock = Instantiate(putblock, newPos, Quaternion.identity);
                     newblock.gameObject.name = "block";
                     if (blockGravity)
                     {
@@ -258,6 +282,7 @@ public class Blocks : MonoBehaviour
         {
             counter = 0;
         }
+        player.clearBullets();
     }
 
     void SetTargetInvisible(GameObject Target, bool visible)

@@ -3,23 +3,43 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class UITextControl : MonoBehaviour
 {
-    public TextMeshProUGUI left;
-    public TextMeshProUGUI center;
-    public TextMeshProUGUI right;
+    public Text left;
+    public Text center;
+    public Text right;
+    public GameObject overlay;
     public Blocks modeBool;
     string mode;
     string clickAction;
     string gravity;
     string color;
     string hammer;
+    bool paused = false;
 
+    public Button resume;
+    public Button gohome;
+    public Button save;
     // Start is called before the first frame update
     void Start()
     {
-        
+        overlay.SetActive(false);
+        gohome.GetComponent<Button>().onClick.AddListener(home);
+        resume.GetComponent<Button>().onClick.AddListener(contplaying);
+    }
+
+    void home()
+    {
+        SceneManager.LoadScene(1);
+    }
+
+    void contplaying()
+    {
+        overlay.SetActive(false);
+        paused = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     // Update is called once per frame
@@ -62,7 +82,8 @@ public class UITextControl : MonoBehaviour
 [Right Click] Destroy";
 
         center.text = $@"[Z] Toggle Build/Gun {mode}
-[V] Toggle Hammer {hammer}";
+[V] Toggle Hammer {hammer}
+[P] Save/Return";
 
         right.text = $@"[X] Toggle Block Gravity {gravity}
 [C] Change Color ({color})";
@@ -70,13 +91,19 @@ public class UITextControl : MonoBehaviour
         left.transform.position = new Vector3(0, Screen.height);
         right.transform.position = new Vector3(Screen.width, Screen.height);
         center.transform.position = new Vector3(Screen.width / 2, Screen.height);
-    }
 
-    private void OnGUI()
-    {
-        //GUI.Box(new Rect(0, 0, 100, 50), left.text);
-        //GUI.Box(new Rect(Screen.width - 100, 0, 100, 50), right.text);
-        //GUI.Box(new Rect(0, Screen.height - 50, 100, 50), "Bottom-left");
-        //GUI.Box(new Rect(Screen.width - 100, Screen.height - 50, 100, 50), "Bottom right");
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            if (paused)
+            {
+                contplaying();
+            }
+            else
+            {
+                overlay.SetActive(true);
+                paused = true;
+                Cursor.lockState = CursorLockMode.None;
+            }
+        }
     }
 }

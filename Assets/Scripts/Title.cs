@@ -3,47 +3,93 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System;
 
 public class Title : MonoBehaviour
 {
-    public Text cubeX;
-    public Text cubeY;
-    public Text cubeZ;
-    public Text radius;
+    public InputField cubeX;
+    public InputField cubeY;
+    public InputField cubeZ;
+    public InputField radius;
+    public InputField baseWidth;
+    public InputField degree;
+    public InputField coeficients;
     public Text title;
-    Text[] inputs = new Text[4];
-    public GameObject[] overlay;
 
     public GameObject top;
     public GameObject sphere;
     public GameObject cube;
+    public GameObject triangle;
+    public GameObject polynomial;
     public Button generateCube;
     public Button generateSphere;
+    public Button generateEmpty;
+    public Button generateTriangle;
+    public Button generatePolynomial;
     public Button go;
+    public Toggle rounded;
+
+    public Button btnClose;
+    public GameObject scrollArea;
+    public static float move = 0;
+
+    public Text equationTemplate;
+    public Text coefTemplate;
+
     // Start is called before the first frame update
     void Start()
     {
-        inputs[0] = cubeX;
-        inputs[1] = cubeY;
-        inputs[2] = cubeZ;
-        inputs[3] = radius;
         top.SetActive(false);
 
         generateCube.GetComponent<Button>().onClick.AddListener(cubeAction);
         generateSphere.GetComponent<Button>().onClick.AddListener(sphereAction);
+        generateTriangle.GetComponent<Button>().onClick.AddListener(triangleAction);
+        generateEmpty.GetComponent<Button>().onClick.AddListener(emptyAction);
+        generatePolynomial.GetComponent<Button>().onClick.AddListener(polynomialAction);
+
+        degree.onValueChanged.AddListener(delegate { UpdateDegree(); });
+        btnClose.GetComponent<Button>().onClick.AddListener(close);
         go.GetComponent<Button>().onClick.AddListener(generate);
+    }
+    
+    void UpdateDegree()
+    {
+        int deg = int.Parse(degree.text) + 1;
+        string alphabet = "abcdefghijklmnopqrstuvwxyz";
+        string equation = "";
+        string coefTemplate2 = "";
+        string coefTemplate3 = "";
+        for(int i = 0; i < deg; i++)
+        {
+            if(i == 0)
+            {
+                equation = alphabet[deg - 1] + "x^" + i;
+                coefTemplate2 += alphabet[deg - 1];
+                coefTemplate3 += "1";
+            }
+            else
+            {
+                equation = alphabet[deg - i - 1] + "x^" + i + " + " + equation;
+                coefTemplate2 = alphabet[deg - i - 1] + "," + coefTemplate2;
+                coefTemplate3 += ",1";
+            }
+        }
+        coefTemplate.text = coefTemplate2 + " (Example: " + coefTemplate3 + " )";
+        equationTemplate.text = equation;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        scrollArea.transform.position += new Vector3(move, 0, 0);
     }
 
     void cubeAction()
     {
         top.SetActive(true);
         sphere.SetActive(false);
+        triangle.SetActive(false);
+        polynomial.SetActive(false);
         title.text = "Generate Cube";
         TitleToGame.GenerationType = "cube";
     }
@@ -52,23 +98,73 @@ public class Title : MonoBehaviour
     {
         top.SetActive(true);
         cube.SetActive(false);
+        triangle.SetActive(false);
+        polynomial.SetActive(false);
         title.text = "Generate Sphere";
         TitleToGame.GenerationType = "sphere";
     }
 
+    void triangleAction()
+    {
+        top.SetActive(true);
+        triangle.SetActive(true);
+        cube.SetActive(false);
+        sphere.SetActive(false);
+        polynomial.SetActive(false);
+        title.text = "Generate Triangle";
+        TitleToGame.GenerationType = "triangle";
+    }
+
+    void polynomialAction()
+    {
+        top.SetActive(true);
+        polynomial.SetActive(true);
+        triangle.SetActive(false);
+        cube.SetActive(false);
+        sphere.SetActive(false);
+        title.text = "Generate Polynomial";
+        TitleToGame.GenerationType = "polynomial";
+    }
+
+    void emptyAction()
+    {
+        TitleToGame.GenerationType = "empty";
+        SceneManager.LoadScene(0);
+    }
+
     void generate()
     {
-        foreach(Text input in inputs)
+        int[] coeficientsArr;
+        try
         {
-            if(input.text == "")
-            {
-                input.text = "10";
-            }
+            coeficientsArr = Array.ConvertAll(coeficients.text.Split(','), int.Parse);
         }
+        catch
+        {
+            coeficientsArr = new int[] { 0 };
+        }
+
+        TitleToGame.coeficients = coeficientsArr;
+        TitleToGame.degree = int.Parse(degree.text);
+        TitleToGame.useRounded = rounded.isOn;
+        if(cubeX.text == "" || int.Parse(cubeX.text) > 20 || !IsNumeric(cubeX.text))              {cubeX.text = "20";}
+        if (cubeY.text == "" || int.Parse(cubeY.text) > 20 || !IsNumeric(cubeY.text))             {cubeY.text = "20";}
+        if (cubeZ.text == "" || int.Parse(cubeZ.text) > 20 || !IsNumeric(cubeZ.text))             {cubeZ.text = "20";}
+        if (radius.text == "" || int.Parse(radius.text) > 10 || !IsNumeric(radius.text))          {radius.text = "10";}
+        if (baseWidth.text == "" || int.Parse(baseWidth.text) > 20 || !IsNumeric(baseWidth.text)) {baseWidth.text = "20";}
         TitleToGame.cubeX = int.Parse(cubeX.text);
-        TitleToGame.cubeX = int.Parse(cubeY.text);
+        TitleToGame.cubeY = int.Parse(cubeY.text);
         TitleToGame.cubeZ = int.Parse(cubeZ.text);
         TitleToGame.radius = int.Parse(radius.text);
         SceneManager.LoadScene(0);
     }
+
+    void close()
+    {
+        cube.SetActive(true);
+        sphere.SetActive(true);
+        top.SetActive(false);
+    }
+
+    bool IsNumeric(string text) => double.TryParse(text, out _);
 }
