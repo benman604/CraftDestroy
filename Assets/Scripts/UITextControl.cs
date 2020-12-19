@@ -32,7 +32,7 @@ public class UITextControl : MonoBehaviour
 
     void home()
     {
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(0);
     }
 
     void contplaying()

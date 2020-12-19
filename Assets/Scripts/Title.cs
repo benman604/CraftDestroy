@@ -156,7 +156,7 @@ public class Title : MonoBehaviour
         TitleToGame.cubeY = int.Parse(cubeY.text);
         TitleToGame.cubeZ = int.Parse(cubeZ.text);
         TitleToGame.radius = int.Parse(radius.text);
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(1);
     }
 
     void close()
