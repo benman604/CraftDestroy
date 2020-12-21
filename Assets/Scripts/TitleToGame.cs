@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TitleToGame
 {
-    public static string GenerationType = "triangle";
+    public static string GenerationType = "sine";
     public static bool useRounded = true;
     public static int cubeX = 5;
     public static int cubeY = 5;
@@ -18,5 +18,10 @@ public class TitleToGame
     public static int baseWidth = 15;
 
     public static int degree = 0;
-    public static int[] coeficients = new int[] { 0 };
+    public static float[] coeficients;
+
+    public static bool sinmove = true;
+    public static float sina = -1f;
+    public static float sinh = 3;
+    public static float sink = 0;
 }

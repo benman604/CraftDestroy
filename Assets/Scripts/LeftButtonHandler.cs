@@ -1,20 +1,18 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;// Required when using Event data.
-
-public class LeftButtonHandler : MonoBehaviour, IPointerDownHandler, IPointerUpHandler// required interface when using the OnPointerDown method.
+using UnityEngine.EventSystems;
+public class LeftButtonHandler : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
-    //Do this when the mouse is clicked over the selectable object this script is attached to.
     public void OnPointerDown(PointerEventData eventData)
     {
         if(this.gameObject.name == "L")
         {
-            Title.move = 500 * Time.deltaTime;
+            Title.move = 5;
         }
         else
         {
-            Title.move = -500 * Time.deltaTime;
+            Title.move = -5;
         }
     }
 

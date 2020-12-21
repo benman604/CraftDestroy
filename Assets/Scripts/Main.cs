@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using UnityEngine;
 
-public class Blocks : MonoBehaviour
+public class Main : MonoBehaviour
 {
     public GameObject block;
     public GameObject floor;
@@ -33,6 +33,8 @@ public class Blocks : MonoBehaviour
     public GameObject[] allBlocks;
     public Vector3[] allBlockPositions;
 
+    private List<GameObject> SinRows = new List<GameObject>();
+    private List<float> SinRowX = new List<float>();
     // Start is called before the first frame update
     void Start()
     {
@@ -50,7 +52,7 @@ public class Blocks : MonoBehaviour
         {
             notempty = false;
             createFlatSquare(20, 0, floor, 0.5f, false);
-        } 
+        }
         else if (type == "cube")
         {
             for (float y = 0; y < TitleToGame.cubeY; y++)
@@ -69,7 +71,8 @@ public class Blocks : MonoBehaviour
                     }
                 }
             }
-        } else if (type == "sphere")
+        }
+        else if (type == "sphere")
         {
             for (int x = -TitleToGame.radius; x < TitleToGame.radius * TitleToGame.stretchFactorX; x++)
             {
@@ -88,14 +91,62 @@ public class Blocks : MonoBehaviour
                     }
                 }
             }
-        } else if (type == "triangle")
+        }
+        else if (type == "triangle")
         {
             for (int y = 0; y < TitleToGame.baseWidth; y++)
             {
                 createFlatSquare(TitleToGame.baseWidth - y, y, block, 0.5f * spacing, true);
             }
         }
-
+        else if (type == "polynomial")
+        {
+            float[] coef = TitleToGame.coeficients;
+            for (float z = -10; z <= 10; z += 0.5f)
+            {
+                for (float x = -10; x <= 10; x += 0.5f)
+                {
+                    float y = 0;
+                    for (int i = 0; i <= TitleToGame.degree; i++)
+                    {
+                        y += coef[TitleToGame.degree - i] * Mathf.Pow(x, i);
+                        y /= 5;
+                    }
+                    GameObject newblock =  Instantiate(block, new Vector3(x, y, z + 15), Quaternion.identity);
+                    newblock.transform.name = "block";
+                    addBlockToList(newblock);
+                }
+            }
+        } 
+        else if(type == "sine")
+        {
+            for(float x = -10; x <= 10; x+=0.5f)
+            {
+                GameObject row = new GameObject("row");
+                row.transform.position = new Vector3(x, 0, 0);
+                for (float z = -10; z <= 10; z+=0.5f)
+                {
+                    if (!TitleToGame.sinmove)
+                    {
+                        float y = TitleToGame.sina * Mathf.Sin(x - TitleToGame.sinh) + TitleToGame.sink;
+                        y /= 2;
+                        GameObject newblock = Instantiate(block, new Vector3(x, y, z + 15), Quaternion.identity);
+                        newblock.transform.name = "block";
+                        newblock.transform.parent = row.transform;
+                        addBlockToList(newblock);
+                    }
+                    else
+                    {
+                        GameObject newblock = Instantiate(block, new Vector3(x, 0, z + 15), Quaternion.identity);
+                        newblock.transform.name = "block";
+                        newblock.transform.parent = row.transform;
+                        addBlockToList(newblock);
+                    }
+                }
+                SinRows.Add(row);
+                SinRowX.Add(x);
+            }
+        }
 
         SetTargetInvisible(gun, false);
 
@@ -114,19 +165,20 @@ public class Blocks : MonoBehaviour
             }
             preBlock.SetActive(false);
         }
-    }
+        
 
-    void createFlatSquare(int width, float y, GameObject myblock, float space, bool list)
-    {
-        for (float x = 0; x < width; x++)
+        void createFlatSquare(int width, float y, GameObject myblock, float space, bool list)
         {
-            for (float z = 0; z < width; z++)
+            for (float x = 0; x < width; x++)
             {
-                GameObject newBlock = Instantiate(myblock, new Vector3(x, y, z + 15) * space, Quaternion.identity);
-                newBlock.transform.name = "block";
-                if (list)
+                for (float z = 0; z < width; z++)
                 {
-                    addBlockToList(newBlock);
+                    GameObject newBlock = Instantiate(myblock, new Vector3(x, y, z + 15) * space, Quaternion.identity);
+                    newBlock.transform.name = "block";
+                    if (list)
+                    {
+                        addBlockToList(newBlock);
+                    }
                 }
             }
         }
@@ -135,6 +187,16 @@ public class Blocks : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (TitleToGame.GenerationType == "sine" && TitleToGame.sinmove)
+        {
+            for (int i = 0; i < SinRows.Count; i++)
+            {
+                float y = TitleToGame.sina * Mathf.Sin(SinRowX[i] - TitleToGame.sinh + Time.time) + TitleToGame.sink;
+                y /= 2;
+                SinRows[i].transform.position = new Vector3(SinRowX[i], y, 0);
+            }
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
             if (buildMode)
@@ -158,7 +220,7 @@ public class Blocks : MonoBehaviour
                 buildMode = false;
                 SetTargetInvisible(gun, true);
                 head.enabled = false;
-                foreach(GameObject i in body)
+                foreach (GameObject i in body)
                 {
                     SetTargetInvisible(i, false);
                 }
@@ -186,7 +248,7 @@ public class Blocks : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.C))
         {
             currentColorIndex++;
-            if(currentColorIndex == colorsString.Length)
+            if (currentColorIndex == colorsString.Length)
             {
                 currentColorIndex = 0;
             }
@@ -261,7 +323,7 @@ public class Blocks : MonoBehaviour
     int counter = 0;
     void resetAllBlockPositions()
     {
-        for(int i = 0; i < allBlocks.Length; i++)
+        for (int i = 0; i < allBlocks.Length; i++)
         {
             GameObject block = allBlocks[i];
             if (block != null)
@@ -274,7 +336,7 @@ public class Blocks : MonoBehaviour
             }
         }
         counter++;
-        if(counter < 10)
+        if (counter < 10)
         {
             Invoke("resetAllBlockPositions", 0.1f);
         }

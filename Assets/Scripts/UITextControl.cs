@@ -11,7 +11,7 @@ public class UITextControl : MonoBehaviour
     public Text center;
     public Text right;
     public GameObject overlay;
-    public Blocks modeBool;
+    public Main modeBool;
     string mode;
     string clickAction;
     string gravity;

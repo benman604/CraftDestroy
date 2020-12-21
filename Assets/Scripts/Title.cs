@@ -36,6 +36,13 @@ public class Title : MonoBehaviour
     public Text equationTemplate;
     public Text coefTemplate;
 
+    public InputField sina;
+    public InputField sinh;
+    public InputField sink;
+    public Toggle sinmoving;
+    public GameObject sine;
+    public Button generateSine;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -46,6 +53,7 @@ public class Title : MonoBehaviour
         generateTriangle.GetComponent<Button>().onClick.AddListener(triangleAction);
         generateEmpty.GetComponent<Button>().onClick.AddListener(emptyAction);
         generatePolynomial.GetComponent<Button>().onClick.AddListener(polynomialAction);
+        generateSine.GetComponent<Button>().onClick.AddListener(sineAction);
 
         degree.onValueChanged.AddListener(delegate { UpdateDegree(); });
         btnClose.GetComponent<Button>().onClick.AddListener(close);
@@ -90,6 +98,7 @@ public class Title : MonoBehaviour
         sphere.SetActive(false);
         triangle.SetActive(false);
         polynomial.SetActive(false);
+        sine.SetActive(false);
         title.text = "Generate Cube";
         TitleToGame.GenerationType = "cube";
     }
@@ -100,6 +109,7 @@ public class Title : MonoBehaviour
         cube.SetActive(false);
         triangle.SetActive(false);
         polynomial.SetActive(false);
+        sine.SetActive(false);
         title.text = "Generate Sphere";
         TitleToGame.GenerationType = "sphere";
     }
@@ -111,6 +121,7 @@ public class Title : MonoBehaviour
         cube.SetActive(false);
         sphere.SetActive(false);
         polynomial.SetActive(false);
+        sine.SetActive(false);
         title.text = "Generate Triangle";
         TitleToGame.GenerationType = "triangle";
     }
@@ -122,40 +133,62 @@ public class Title : MonoBehaviour
         triangle.SetActive(false);
         cube.SetActive(false);
         sphere.SetActive(false);
+        sine.SetActive(false);
         title.text = "Generate Polynomial";
         TitleToGame.GenerationType = "polynomial";
+    }
+
+    void sineAction()
+    {
+        top.SetActive(true);
+        sine.SetActive(true);
+        polynomial.SetActive(false);
+        triangle.SetActive(false);
+        cube.SetActive(false);
+        sphere.SetActive(false);
+        title.text = "Generate Sine";
+        TitleToGame.GenerationType = "sine";
     }
 
     void emptyAction()
     {
         TitleToGame.GenerationType = "empty";
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(1);
     }
 
     void generate()
     {
         int[] coeficientsArr;
+        Debug.Log(coeficients.text);
         try
         {
-            coeficientsArr = Array.ConvertAll(coeficients.text.Split(','), int.Parse);
+            TitleToGame.coeficients = Array.ConvertAll(coeficients.text.Split(','), float.Parse);
         }
         catch
         {
             coeficientsArr = new int[] { 0 };
+            Debug.Log("Ha!");
         }
 
-        TitleToGame.coeficients = coeficientsArr;
         TitleToGame.degree = int.Parse(degree.text);
         TitleToGame.useRounded = rounded.isOn;
         if(cubeX.text == "" || int.Parse(cubeX.text) > 20 || !IsNumeric(cubeX.text))              {cubeX.text = "20";}
         if (cubeY.text == "" || int.Parse(cubeY.text) > 20 || !IsNumeric(cubeY.text))             {cubeY.text = "20";}
         if (cubeZ.text == "" || int.Parse(cubeZ.text) > 20 || !IsNumeric(cubeZ.text))             {cubeZ.text = "20";}
-        if (radius.text == "" || int.Parse(radius.text) > 10 || !IsNumeric(radius.text))          {radius.text = "10";}
+        if (radius.text == "" || int.Parse(radius.text) > 20 || !IsNumeric(radius.text))          {radius.text = "20";}
         if (baseWidth.text == "" || int.Parse(baseWidth.text) > 20 || !IsNumeric(baseWidth.text)) {baseWidth.text = "20";}
+        if (sina.text == "" || !IsNumeric(sina.text)) { sina.text = "1"; }
+        if (sinh.text == "" || !IsNumeric(sinh.text)) { sinh.text = "0"; }
+        if (sink.text == "" || !IsNumeric(sink.text)) { sink.text = "0"; }
         TitleToGame.cubeX = int.Parse(cubeX.text);
         TitleToGame.cubeY = int.Parse(cubeY.text);
         TitleToGame.cubeZ = int.Parse(cubeZ.text);
         TitleToGame.radius = int.Parse(radius.text);
+        TitleToGame.baseWidth = int.Parse(baseWidth.text);
+        TitleToGame.sina = int.Parse(sina.text);
+        TitleToGame.sinh = int.Parse(sinh.text);
+        TitleToGame.sink = int.Parse(sink.text);
+        TitleToGame.sinmove = sinmoving.isOn;
         SceneManager.LoadScene(1);
     }
 
