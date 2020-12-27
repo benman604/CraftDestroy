@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Linq;
 using UnityEngine;
+using System.IO;
+using UnityEngine.UI;
 
 public class Main : MonoBehaviour
 {
@@ -12,7 +15,7 @@ public class Main : MonoBehaviour
     public int size = 50;
     public Camera cam;
     public float range = 50;
-    public bool buildMode = true;
+    public bool buildMode = false;
     public bool blockGravity = false;
     public bool hammer = false;
 
@@ -32,12 +35,19 @@ public class Main : MonoBehaviour
 
     public GameObject[] allBlocks;
     public Vector3[] allBlockPositions;
+    public List<int> allBlockColors;
+    public List<int> allBlockGravity;
 
     private List<GameObject> SinRows = new List<GameObject>();
     private List<float> SinRowX = new List<float>();
+
+    public Button save;
+    public InputField savename;
     // Start is called before the first frame update
     void Start()
     {
+        UITextControl.paused = false;
+        save.GetComponent<Button>().onClick.AddListener(Save);
         int blockStart = Mathf.RoundToInt(-size / 2);
         string type = TitleToGame.GenerationType;
         Vector3 center = Vector3.zero;
@@ -48,12 +58,23 @@ public class Main : MonoBehaviour
             block = putblock;
             spacing = 1.3f;
         }
-        if (type == "empty")
+        if (type == "empty" || type == "craft")
         {
+            buildMode = true;
             notempty = false;
             createFlatSquare(20, 0, floor, 0.5f, false);
+            save.interactable = true;
+            savename.interactable = true;
+            if(type == "craft")
+            {
+                Load();
+            }
         }
-        else if (type == "cube")
+        else
+        {
+            buildMode = false;
+        }
+        if (type == "cube")
         {
             for (float y = 0; y < TitleToGame.cubeY; y++)
             {
@@ -197,7 +218,7 @@ public class Main : MonoBehaviour
             }
         }
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && !UITextControl.paused)
         {
             if (buildMode)
             {
@@ -366,5 +387,71 @@ public class Main : MonoBehaviour
         var tmpList2 = allBlockPositions.ToList();
         tmpList2.Add(newblock.gameObject.transform.position);
         allBlockPositions = tmpList2.ToArray();
+
+        allBlockColors.Add(currentColorIndex);
+        if (newblock.GetComponent<Rigidbody>().useGravity)
+        {
+            allBlockGravity.Add(1);
+        }
+        else
+        {
+            allBlockGravity.Add(0);
+        }
+    }
+
+    void Save()
+    {
+        string output = "";
+        for (int i = 0; i < allBlocks.Length; i++)
+        {
+            output += allBlockPositions[i].x + " " + allBlockPositions[i].y + " " + allBlockPositions[i].z + " " + allBlockColors[i] + " " + allBlockGravity[i] + System.Environment.NewLine;
+        }
+        File.WriteAllText(Application.dataPath + "/" + savename.text + ".craft", output);
+        if(File.Exists(Application.dataPath + "/.ALLCFAFTS"))
+        {
+            string p = File.ReadAllText(Application.dataPath + "/.ALLCFAFTS");
+            string[] lines = p.Split(
+                new[] { System.Environment.NewLine },
+                System.StringSplitOptions.None
+            );
+            if (!lines.Contains(savename.text))
+            {
+                p += System.Environment.NewLine + savename.text;
+                File.WriteAllText(Application.dataPath + "/.ALLCFAFTS", p);
+            }
+        }
+        else
+        {
+            File.WriteAllText(Application.dataPath + "/.ALLCFAFTS", savename.text);
+        }
+    }
+
+    void Load()
+    {
+        string input = File.ReadAllText(Application.dataPath + "/" + TitleToGame.loadname + ".craft");
+        string[] lines = input.Split(
+            new[] { System.Environment.NewLine },
+            System.StringSplitOptions.None
+        );
+        savename.text = TitleToGame.loadname;
+        foreach(string line in lines)
+        {
+            if (line != "")
+            {
+                Debug.Log(line);
+                string[] vals = line.Split(' ');
+                Debug.Log((vals[1]));
+                Vector3 pos = new Vector3(float.Parse(vals[0]), float.Parse(vals[1]), float.Parse(vals[2]));
+                Color color = colorsObject[int.Parse(vals[3])];
+                GameObject newblock = Instantiate(putblock, pos, Quaternion.identity);
+                newblock.transform.name = "block";
+                newblock.GetComponent<Renderer>().material.SetColor("_Color", color);
+                if(int.Parse(vals[4]) == 1)
+                {
+                    newblock.GetComponent<Rigidbody>().useGravity = true;
+                }
+                addBlockToList(newblock);
+            }
+        }
     }
 }

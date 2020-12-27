@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System.IO;
 using System;
+using System.Linq;
 
 public class Title : MonoBehaviour
 {
@@ -21,6 +23,7 @@ public class Title : MonoBehaviour
     public GameObject cube;
     public GameObject triangle;
     public GameObject polynomial;
+ 
     public Button generateCube;
     public Button generateSphere;
     public Button generateEmpty;
@@ -43,6 +46,10 @@ public class Title : MonoBehaviour
     public GameObject sine;
     public Button generateSine;
 
+    public Button generateSaved;
+    public GameObject saved;
+    public Dropdown saveName;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -54,10 +61,22 @@ public class Title : MonoBehaviour
         generateEmpty.GetComponent<Button>().onClick.AddListener(emptyAction);
         generatePolynomial.GetComponent<Button>().onClick.AddListener(polynomialAction);
         generateSine.GetComponent<Button>().onClick.AddListener(sineAction);
+        generateSaved.GetComponent<Button>().onClick.AddListener(savedAction);
 
         degree.onValueChanged.AddListener(delegate { UpdateDegree(); });
         btnClose.GetComponent<Button>().onClick.AddListener(close);
         go.GetComponent<Button>().onClick.AddListener(generate);
+
+        saveName.ClearOptions();
+        string input = File.ReadAllText(Application.dataPath + "/.ALLCFAFTS");
+        string[] lines = input.Split(
+            new[] { System.Environment.NewLine },
+            System.StringSplitOptions.None
+        );
+        foreach (string line in lines)
+        {
+            saveName.options.Add(new Dropdown.OptionData(line));
+        }
     }
     
     void UpdateDegree()
@@ -94,6 +113,7 @@ public class Title : MonoBehaviour
 
     void cubeAction()
     {
+        saved.SetActive(false);
         top.SetActive(true);
         sphere.SetActive(false);
         triangle.SetActive(false);
@@ -105,6 +125,7 @@ public class Title : MonoBehaviour
 
     void sphereAction()
     {
+        saved.SetActive(false);
         top.SetActive(true);
         cube.SetActive(false);
         triangle.SetActive(false);
@@ -116,6 +137,7 @@ public class Title : MonoBehaviour
 
     void triangleAction()
     {
+        saved.SetActive(false);
         top.SetActive(true);
         triangle.SetActive(true);
         cube.SetActive(false);
@@ -128,6 +150,7 @@ public class Title : MonoBehaviour
 
     void polynomialAction()
     {
+        saved.SetActive(false);
         top.SetActive(true);
         polynomial.SetActive(true);
         triangle.SetActive(false);
@@ -140,6 +163,7 @@ public class Title : MonoBehaviour
 
     void sineAction()
     {
+        saved.SetActive(false);
         top.SetActive(true);
         sine.SetActive(true);
         polynomial.SetActive(false);
@@ -156,8 +180,22 @@ public class Title : MonoBehaviour
         SceneManager.LoadScene(1);
     }
 
+    void savedAction()
+    {
+        top.SetActive(true);
+        saved.SetActive(true);
+        sine.SetActive(false);
+        polynomial.SetActive(false);
+        triangle.SetActive(false);
+        cube.SetActive(false);
+        sphere.SetActive(false);
+        title.text = "Saved Crafts";
+        TitleToGame.GenerationType = "craft";
+    }
+
     void generate()
     {
+        TitleToGame.loadname = saveName.options[saveName.value].text;
         int[] coeficientsArr;
         Debug.Log(coeficients.text);
         try
@@ -175,7 +213,7 @@ public class Title : MonoBehaviour
         if(cubeX.text == "" || int.Parse(cubeX.text) > 20 || !IsNumeric(cubeX.text))              {cubeX.text = "20";}
         if (cubeY.text == "" || int.Parse(cubeY.text) > 20 || !IsNumeric(cubeY.text))             {cubeY.text = "20";}
         if (cubeZ.text == "" || int.Parse(cubeZ.text) > 20 || !IsNumeric(cubeZ.text))             {cubeZ.text = "20";}
-        if (radius.text == "" || int.Parse(radius.text) > 20 || !IsNumeric(radius.text))          {radius.text = "20";}
+        if (radius.text == "" || int.Parse(radius.text) > 10 || !IsNumeric(radius.text))          {radius.text = "10";}
         if (baseWidth.text == "" || int.Parse(baseWidth.text) > 20 || !IsNumeric(baseWidth.text)) {baseWidth.text = "20";}
         if (sina.text == "" || !IsNumeric(sina.text)) { sina.text = "1"; }
         if (sinh.text == "" || !IsNumeric(sinh.text)) { sinh.text = "0"; }
@@ -185,9 +223,9 @@ public class Title : MonoBehaviour
         TitleToGame.cubeZ = int.Parse(cubeZ.text);
         TitleToGame.radius = int.Parse(radius.text);
         TitleToGame.baseWidth = int.Parse(baseWidth.text);
-        TitleToGame.sina = int.Parse(sina.text);
-        TitleToGame.sinh = int.Parse(sinh.text);
-        TitleToGame.sink = int.Parse(sink.text);
+        TitleToGame.sina = float.Parse(sina.text);
+        TitleToGame.sinh = float.Parse(sinh.text);
+        TitleToGame.sink = float.Parse(sink.text);
         TitleToGame.sinmove = sinmoving.isOn;
         SceneManager.LoadScene(1);
     }

@@ -17,7 +17,7 @@ public class UITextControl : MonoBehaviour
     string gravity;
     string color;
     string hammer;
-    bool paused = false;
+    public static bool paused = false;
 
     public Button resume;
     public Button gohome;
@@ -28,6 +28,7 @@ public class UITextControl : MonoBehaviour
         overlay.SetActive(false);
         gohome.GetComponent<Button>().onClick.AddListener(home);
         resume.GetComponent<Button>().onClick.AddListener(contplaying);
+        save.GetComponent<Button>().onClick.AddListener(saveBlocks);
     }
 
     void home()
@@ -40,6 +41,11 @@ public class UITextControl : MonoBehaviour
         overlay.SetActive(false);
         paused = false;
         Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    void saveBlocks()
+    {
+        //SaveLoad.Save("Untitled1");
     }
 
     // Update is called once per frame

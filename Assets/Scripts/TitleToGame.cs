@@ -24,4 +24,6 @@ public class TitleToGame
     public static float sina = -1f;
     public static float sinh = 3;
     public static float sink = 0;
+
+    public static string loadname = "Untitled1";
 }
