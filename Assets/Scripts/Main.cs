@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.IO;
 using UnityEngine.UI;
 
@@ -58,17 +59,27 @@ public class Main : MonoBehaviour
             block = putblock;
             spacing = 1.3f;
         }
-        if (type == "empty" || type == "craft")
+        if (type == "empty")
+        {
+            buildMode = true;
+            SetTargetInvisible(gun, false);
+            head.enabled = true;
+            foreach (GameObject i in body)
+            {
+                SetTargetInvisible(i, true);
+            }
+            resetAllBlockPositions();
+            preBlock.SetActive(true);
+            notempty = false;
+            createFlatSquare(20, 0, floor, 0.5f, false);
+        }
+        else if (type == "craft")
         {
             buildMode = true;
             notempty = false;
-            createFlatSquare(20, 0, floor, 0.5f, false);
             save.interactable = true;
             savename.interactable = true;
-            if(type == "craft")
-            {
-                Load();
-            }
+            Load();
         }
         else
         {
@@ -185,23 +196,6 @@ public class Main : MonoBehaviour
                 SetTargetInvisible(i, false);
             }
             preBlock.SetActive(false);
-        }
-        
-
-        void createFlatSquare(int width, float y, GameObject myblock, float space, bool list)
-        {
-            for (float x = 0; x < width; x++)
-            {
-                for (float z = 0; z < width; z++)
-                {
-                    GameObject newBlock = Instantiate(myblock, new Vector3(x, y, z + 15) * space, Quaternion.identity);
-                    newBlock.transform.name = "block";
-                    if (list)
-                    {
-                        addBlockToList(newBlock);
-                    }
-                }
-            }
         }
     }
 
@@ -355,6 +349,11 @@ public class Main : MonoBehaviour
                 block.transform.rotation = new Quaternion(0, 0, 0, 0);
                 block.transform.position = pos;
             }
+            else
+            {
+                RemoveAt(ref allBlockPositions, i);
+                RemoveAt(ref allBlocks, i);
+            }
         }
         counter++;
         if (counter < 10)
@@ -401,11 +400,13 @@ public class Main : MonoBehaviour
 
     void Save()
     {
+        resetAllBlockPositions();
         string output = "";
         for (int i = 0; i < allBlocks.Length; i++)
         {
             output += allBlockPositions[i].x + " " + allBlockPositions[i].y + " " + allBlockPositions[i].z + " " + allBlockColors[i] + " " + allBlockGravity[i] + System.Environment.NewLine;
         }
+        if (TitleToGame.GenerationType == "empty") { output += "useempty" + System.Environment.NewLine; }
         File.WriteAllText(Application.dataPath + "/" + savename.text + ".craft", output);
         if(File.Exists(Application.dataPath + "/.ALLCFAFTS"))
         {
@@ -424,6 +425,7 @@ public class Main : MonoBehaviour
         {
             File.WriteAllText(Application.dataPath + "/.ALLCFAFTS", savename.text);
         }
+        SceneManager.LoadScene(0);
     }
 
     void Load()
@@ -436,7 +438,11 @@ public class Main : MonoBehaviour
         savename.text = TitleToGame.loadname;
         foreach(string line in lines)
         {
-            if (line != "")
+            if(line == "useempty")
+            {
+                createFlatSquare(20, 0, floor, 0.5f, false);
+            }
+            else if (line != "")
             {
                 Debug.Log(line);
                 string[] vals = line.Split(' ');
@@ -451,6 +457,33 @@ public class Main : MonoBehaviour
                     newblock.GetComponent<Rigidbody>().useGravity = true;
                 }
                 addBlockToList(newblock);
+            }
+        }
+    }
+
+    public static void RemoveAt<T>(ref T[] arr, int index)
+    {
+        for (int a = index; a < arr.Length - 1; a++)
+        {
+            // moving elements downwards, to fill the gap at [index]
+            arr[a] = arr[a + 1];
+        }
+        // finally, let's decrement Array's size by one
+        System.Array.Resize(ref arr, arr.Length - 1);
+    }
+
+    void createFlatSquare(int width, float y, GameObject myblock, float space, bool list)
+    {
+        for (float x = 0; x < width; x++)
+        {
+            for (float z = 0; z < width; z++)
+            {
+                GameObject newBlock = Instantiate(myblock, new Vector3(x, y, z + 15) * space, Quaternion.identity);
+                newBlock.transform.name = "block";
+                if (list)
+                {
+                    addBlockToList(newBlock);
+                }
             }
         }
     }

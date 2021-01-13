@@ -102,7 +102,7 @@ public class UITextControl : MonoBehaviour
         {
             if (paused)
             {
-                contplaying();
+                //contplaying();
             }
             else
             {
