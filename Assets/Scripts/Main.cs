@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.IO;
 using UnityEngine.UI;
+using System;
 
 public class Main : MonoBehaviour
 {
@@ -141,7 +142,15 @@ public class Main : MonoBehaviour
                     float y = 0;
                     for (int i = 0; i <= TitleToGame.degree; i++)
                     {
-                        y += coef[TitleToGame.degree - i] * Mathf.Pow(x, i);
+                        float currentCoef = 0;
+                        try
+                        {
+                            currentCoef = coef[TitleToGame.degree - i];
+                        } catch(IndexOutOfRangeException e)
+                        {
+                            Debug.Log(e);
+                        }
+                        y += currentCoef * Mathf.Pow(x, i);
                         y /= 5;
                     }
                     GameObject newblock =  Instantiate(block, new Vector3(x, y, z + 15), Quaternion.identity);

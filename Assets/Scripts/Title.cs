@@ -31,6 +31,7 @@ public class Title : MonoBehaviour
     public Button generatePolynomial;
     public Button go;
     public Toggle rounded;
+    public Button quit;
 
     public Button btnClose;
     public GameObject scrollArea;
@@ -62,21 +63,33 @@ public class Title : MonoBehaviour
         generatePolynomial.GetComponent<Button>().onClick.AddListener(polynomialAction);
         generateSine.GetComponent<Button>().onClick.AddListener(sineAction);
         generateSaved.GetComponent<Button>().onClick.AddListener(savedAction);
+        quit.GetComponent<Button>().onClick.AddListener(QuitGame);
 
         degree.onValueChanged.AddListener(delegate { UpdateDegree(); });
         btnClose.GetComponent<Button>().onClick.AddListener(close);
         go.GetComponent<Button>().onClick.AddListener(generate);
 
         saveName.ClearOptions();
-        string input = File.ReadAllText(Application.dataPath + "/.ALLCFAFTS");
-        string[] lines = input.Split(
-            new[] { System.Environment.NewLine },
-            System.StringSplitOptions.None
-        );
-        foreach (string line in lines)
+        try
         {
-            saveName.options.Add(new Dropdown.OptionData(line));
+            string input = File.ReadAllText(Application.dataPath + "/.ALLCFAFTS");
+            string[] lines = input.Split(
+                new[] { System.Environment.NewLine },
+                System.StringSplitOptions.None
+            );
+            foreach (string line in lines)
+            {
+                saveName.options.Add(new Dropdown.OptionData(line));
+            }
+        } catch(FileNotFoundException ex)
+        {
+            Debug.Log(ex);
         }
+    }
+
+    void QuitGame()
+    {
+        Application.Quit();
     }
     
     void UpdateDegree()
@@ -195,7 +208,14 @@ public class Title : MonoBehaviour
 
     void generate()
     {
-        TitleToGame.loadname = saveName.options[saveName.value].text;
+        try
+        {
+            TitleToGame.loadname = saveName.options[saveName.value].text;
+        }
+        catch
+        {
+            Debug.Log("gottem");
+        }
         int[] coeficientsArr;
         Debug.Log(coeficients.text);
         try
@@ -205,7 +225,7 @@ public class Title : MonoBehaviour
         catch
         {
             coeficientsArr = new int[] { 0 };
-            Debug.Log("Ha!");
+            Debug.Log("yee it works");
         }
 
         TitleToGame.degree = int.Parse(degree.text);
